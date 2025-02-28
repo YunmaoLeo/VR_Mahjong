@@ -15,7 +15,7 @@ public class PlayerAvatar : MonoBehaviour
     public Transform HeadLookAtPos;
 
     [SerializeField] private float lookAtThreshold = 0.1f;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     void Start()
     {
         
@@ -25,6 +25,7 @@ public class PlayerAvatar : MonoBehaviour
     }
 
     // Update is called once per frame
+    [SerializeField] private Vector3 finger0OffsetEuler;
     void Update()
     {
         var targetDirection = (HeadLookAtPos.position - head.position).normalized;

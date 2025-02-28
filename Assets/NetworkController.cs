@@ -16,6 +16,8 @@ public class NetworkController : NetworkBehaviour
     
     public Dictionary<int, PlayerAvatar> PlayerAvatarsDict = new Dictionary<int, PlayerAvatar>();
 
+    [SerializeField] private OVRManager _ovrManager;
+
     private NetworkRunner currentRunner;
 
     private bool isConnected = false;
@@ -44,7 +46,7 @@ public class NetworkController : NetworkBehaviour
             CameraRigTransform.localRotation = Quaternion.identity;
         }
         // initialize other player's character
-        else
+        // else
         {
             var characterTransform = possibleCharacterList[player.PlayerId - 1];
             var character = Instantiate(characterTransform);
@@ -64,11 +66,14 @@ public class NetworkController : NetworkBehaviour
         {
             return;
         }
+        
+        
 
         var rotation = Quaternion.LookRotation(HMDTransform.forward);
         // var lookDirection = HMDTransform.position - HMDTransform.forward * 10f;
         var lookLocation = HMDTransform.position + HMDTransform.forward * 1000f;
-        RPC_UpdateHMDInfo(currentRunner.LocalPlayer.PlayerId,lookLocation, rotation);
+        var cameraLocation = HMDTransform.position;
+        RPC_UpdateHMDInfo(currentRunner.LocalPlayer.PlayerId,lookLocation, rotation, cameraLocation);
 
         var rightHandPos = RightHandTransform.position;
         var rightHandRot = RightHandTransform.localRotation;
@@ -80,12 +85,15 @@ public class NetworkController : NetworkBehaviour
     }
 
     [Rpc(sources:RpcSources.All, targets:RpcTargets.All)]
-    public void RPC_UpdateHMDInfo(int playerId, Vector3 lookAtPosition, Quaternion rotation)
+    public void RPC_UpdateHMDInfo(int playerId, Vector3 lookAtPosition, Quaternion rotation, Vector3 cameraLocation)
     {
-        if (currentRunner.LocalPlayer.PlayerId != playerId)
+        // if (currentRunner.LocalPlayer.PlayerId != playerId)
         {
             var character = PlayerAvatarsDict[playerId];
             character.HeadLookAtPos.position = lookAtPosition;
+            character.transform.position =new Vector3( cameraLocation.x,character.transform.position.y,cameraLocation.z);
+
+            
         }
     }
 
@@ -94,7 +102,7 @@ public class NetworkController : NetworkBehaviour
     public void RPC_UpdatePlayerHandInfo(int playerId, Vector3 rightHandPos, Quaternion rightHandRotation,
         Vector3 leftHandPos, Quaternion leftHandRotation)
     {
-        if (currentRunner.LocalPlayer.PlayerId != playerId)
+        // if (currentRunner.LocalPlayer.PlayerId != playerId)
         {
             var character = PlayerAvatarsDict[playerId];
             Quaternion offsetRotation = Quaternion.Euler(180, 90, 0);
