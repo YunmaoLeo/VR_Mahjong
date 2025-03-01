@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - ButtonTrigger
+  - FoxHatSlot
+  - FoxBagSlot
+  - Accessory
   layers:
   - Default
   - TransparentFX
