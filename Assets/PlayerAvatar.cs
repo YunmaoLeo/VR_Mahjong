@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Numerics;
 using Meta.XR.MRUtilityKit.SceneDecorator;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.Serialization;
 using Quaternion = UnityEngine.Quaternion;
 using Vector3 = UnityEngine.Vector3;
@@ -16,6 +18,8 @@ public class PlayerAvatar : MonoBehaviour
 
     [SerializeField] private float lookAtThreshold = 0.1f;
 
+    [SerializeField] private List<TwoBoneIKConstraint> handConstraints;
+
     void Start()
     {
         
@@ -23,9 +27,6 @@ public class PlayerAvatar : MonoBehaviour
         Debug.Log("Forward: " + head.forward);
         Debug.Log("right: " +head.right);
     }
-
-    // Update is called once per frame
-    [SerializeField] private Vector3 finger0OffsetEuler;
     void Update()
     {
         var targetDirection = (HeadLookAtPos.position - head.position).normalized;
