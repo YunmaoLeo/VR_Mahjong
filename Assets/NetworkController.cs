@@ -6,16 +6,18 @@ using UnityEngine;
 public class NetworkController : NetworkBehaviour
 {
     [SerializeField] private List<Transform> possiblePositionsList;
-
-    [SerializeField] private List<Transform> possibleCharacterList;
     [SerializeField] private Transform CameraRigTransform;
     [SerializeField] private Transform HMDTransform;
     
     [SerializeField] private Transform LeftHandTransform;
     [SerializeField] private Transform RightHandTransform;
+
+    public List<Transform> LobbyRoomTransforms;
+    public List<Transform> GameRoomTransforms;
     
     public Dictionary<int, PlayerAvatar> PlayerAvatarsDict = new Dictionary<int, PlayerAvatar>();
 
+    
     [SerializeField] private OVRManager _ovrManager;
 
     public bool isInGameMode = false;
@@ -33,6 +35,13 @@ public class NetworkController : NetworkBehaviour
     [SerializeField] private float accessoryUpdateDuration = 0.2f;
 
     private float _accessoryUpdateCd = 0.0f;
+    
+    public Dictionary<int, bool> IsPlayerReadyDict = new Dictionary<int, bool>();
+    public bool haveAllPersonReady = false;
+    public float readyStatusDuration = 5.0f;
+    private float _readyStatusTimer = 0.0f;
+
+    public bool IsGameRunning = false;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -68,23 +77,66 @@ public class NetworkController : NetworkBehaviour
         //     
         //     PlayerAvatarsDict.Add(player.PlayerId, character.GetComponent<PlayerAvatar>());
         // }
+
+        IsPlayerReadyDict[player.PlayerId] = false;
         isConnected = true;
     }
 
     // Update is called once per frame
 
     public bool needReady = false;
-    void Update()
+    void FixedUpdate()
     {
         if (!isConnected)
         {
             return;
         }
 
+        if (IsGameRunning)
+        {
+            // update current HMDInfo and hand Info
+            var rotation = Quaternion.LookRotation(HMDTransform.forward);
+            // var lookDirection = HMDTransform.position - HMDTransform.forward * 10f;
+            var lookLocation = HMDTransform.position + HMDTransform.forward * 1000f;
+            var cameraLocation = HMDTransform.position;
+            RPC_UpdateHMDInfo(currentRunner.LocalPlayer.PlayerId,lookLocation, rotation, cameraLocation);
+
+            var rightHandPos = RightHandTransform.position;
+            var rightHandRot = RightHandTransform.localRotation;
+            var leftHandPos = LeftHandTransform.position;
+            var leftHandRot = LeftHandTransform.localRotation;
+
+            RPC_UpdatePlayerHandInfo(currentRunner.LocalPlayer.PlayerId,
+                rightHandPos, rightHandRot, leftHandPos, leftHandRot);
+            
+        }
+        
+
+
+        // handle things in lobby room.
+        if (IsGameRunning)
+        {
+            return;
+        }
+        
+        //debug only
         if (needReady)
         {
             ChangeReadyStatus();
             needReady = false;
+        }
+        
+        if (haveAllPersonReady)
+        {
+            _readyStatusTimer += Time.fixedDeltaTime;
+            if (_readyStatusTimer >= readyStatusDuration)
+            {
+                StartGameStatus();
+            }
+        }
+        else
+        {
+            _readyStatusTimer = 0.0f;
         }
         
         _accessoryUpdateCd += Time.deltaTime;
@@ -100,24 +152,7 @@ public class NetworkController : NetworkBehaviour
                 VhatColor, VbagColor);
         }
         
-        // update current HMDInfo and hand Info
-        var rotation = Quaternion.LookRotation(HMDTransform.forward);
-        // var lookDirection = HMDTransform.position - HMDTransform.forward * 10f;
-        var lookLocation = HMDTransform.position + HMDTransform.forward * 1000f;
-        var cameraLocation = HMDTransform.position;
-        RPC_UpdateHMDInfo(currentRunner.LocalPlayer.PlayerId,lookLocation, rotation, cameraLocation);
-
-
-        if (isInGameMode)
-        {
-            var rightHandPos = RightHandTransform.position;
-            var rightHandRot = RightHandTransform.localRotation;
-            var leftHandPos = LeftHandTransform.position;
-            var leftHandRot = LeftHandTransform.localRotation;
-        
-            RPC_UpdatePlayerHandInfo(currentRunner.LocalPlayer.PlayerId,
-                rightHandPos, rightHandRot, leftHandPos, leftHandRot);
-        }
+  
     }
 
     public void ChangeReadyStatus()
@@ -128,13 +163,88 @@ public class NetworkController : NetworkBehaviour
     }
 
 
+    public void StartGameStatus()
+    {
+        
+        IsGameRunning = true;
+        
+        //hide and show room settings accordingly.
+        foreach (var t in LobbyRoomTransforms)
+        {
+            t.gameObject.SetActive(false);
+        }
+        foreach (var t in GameRoomTransforms)
+        {
+            t.gameObject.SetActive(true);
+        }
+
+        SetLocalPlayerCharacter();
+        AllocateRemoteCharacters();
+    }
+
+    public void SetLocalPlayerCharacter()
+    {
+        localCharacter.gameObject.SetActive(false);
+        
+        //set local camera
+        var localPlayerID = currentRunner.LocalPlayer.PlayerId;
+        var spawnPoint = possiblePositionsList[localPlayerID - 1];
+        CameraRigTransform.SetParent(spawnPoint.transform);
+        CameraRigTransform.localPosition = Vector3.zero;
+        CameraRigTransform.localRotation = Quaternion.identity;
+    }
+
+    public void AllocateRemoteCharacters()
+    {
+        foreach (var kv in RemoteCharactersManager.Instance.avatarDict)
+        {
+            var playerId = kv.Key;
+            var character = kv.Value.transform;
+            if (playerId != currentRunner.LocalPlayer.PlayerId)
+            {
+                var spawnPoint = possiblePositionsList[playerId - 1];
+               
+                character.SetParent(spawnPoint.transform);
+                character.localPosition = Vector3.zero;
+                character.localRotation = Quaternion.identity;
+                character.localScale = Vector3.one * 8;
+                
+                PlayerAvatarsDict.Add(playerId, RemoteCharactersManager.Instance.avatarDict[playerId]);
+                RemoteCharactersManager.Instance.characterDict[playerId].ChangeCheckStatus(false);
+                
+                character.gameObject.SetActive(true);
+            }
+        }
+    }
+
     [Rpc(sources: RpcSources.All, targets: RpcTargets.All)]
     public void RPC_UpdateReadyStatus(int playerId, bool readyStatus)
     {
+        // update player ready status
+        IsPlayerReadyDict[playerId] = readyStatus;
+        
+        //update game appearance
         if (currentRunner.LocalPlayer.PlayerId != playerId)
         {
             var character = RemoteCharactersManager.Instance.GetCharacterCustomizer(playerId);
             character.ChangeCheckStatus(readyStatus);
+        }
+        
+        //update have all person ready status
+        if (IsPlayerReadyDict.Count > 1)
+        {
+            haveAllPersonReady = true;
+            
+            foreach (var kv in IsPlayerReadyDict)
+            {
+                if (kv.Value == false)
+                {
+                    haveAllPersonReady = false;
+                    _readyStatusTimer = 0.0f;
+                    break;
+                }
+            }
+
         }
     }
 
@@ -168,7 +278,7 @@ public class NetworkController : NetworkBehaviour
     public void RPC_UpdatePlayerHandInfo(int playerId, Vector3 rightHandPos, Quaternion rightHandRotation,
         Vector3 leftHandPos, Quaternion leftHandRotation)
     {
-        // if (currentRunner.LocalPlayer.PlayerId != playerId)
+        if (currentRunner.LocalPlayer.PlayerId != playerId)
         {
             var character = PlayerAvatarsDict[playerId];
             Quaternion offsetRotation = Quaternion.Euler(180, 90, 0);
