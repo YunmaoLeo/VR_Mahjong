@@ -4,16 +4,18 @@ using UnityEngine;
 public class SingleSnapSlot : MonoBehaviour
 {
     [SerializeField] private SingleBench singleBench;
+
+    private bool _hasOneTile = false;
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("TestTile"))
         {
-            if (!other.GetComponent<BoxCollider>().enabled)
+            if (_hasOneTile)
             {
                 return;
             }
-            
-            Debug.Log("Single Bench Collider Happen");
+
+            _hasOneTile = true;
             var mahjongTile = other.gameObject.GetComponent<MahjongTile>();
             mahjongTile.OnTileSnapped();
             other.transform.position = transform.position;
@@ -26,7 +28,6 @@ public class SingleSnapSlot : MonoBehaviour
             }
             singleBench.AddPoint(mahjongTile.Point);
             Debug.Log($"Single Bench Added {mahjongTile.Point}");
-            other.GetComponent<BoxCollider>().enabled = false;
             other.GetComponent<Rigidbody>().isKinematic = true;
         }
     }
