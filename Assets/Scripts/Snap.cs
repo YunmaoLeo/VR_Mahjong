@@ -6,18 +6,16 @@ public class Snap : MonoBehaviour
 {
     [SerializeField] Slots Slots;
     [SerializeField] GameObject pieces;
-    [SerializeField] float snapDistance = 0.05f;
+    [SerializeField] float snapDistance = 0.07f;
 
     private Vector3[] slots;
 
-    // Start is called before the first frame update
     void Start()
     {
         // Get slots
         slots = Slots.getSlots();
     }
 
-    // Update is called once per frame
     void Update()
     {
         snapToPosition();
@@ -35,14 +33,15 @@ public class Snap : MonoBehaviour
             // For each slot, i.e. position on the bench
             foreach (Vector3 slot in slots)
             {
-                slotPos = Slots.getWorldPos(slot); // world position
+                slotPos = slot; // world position
 
                 // If the distance between their positions is less than snapDistance...
                 pieceToSlot = slotPos - piecePos;
+                Debug.Log("Distance between slot posiition and tile: " + pieceToSlot.ToString());
                 if (pieceToSlot.magnitude < snapDistance)
                 {
                     // Snap!
-                    // Debug.Log("Within snapDistance!");
+                    Debug.Log("within range!");
                     child.position = slotPos;
                     child.rotation = Slots.getRotation();
                     continue;

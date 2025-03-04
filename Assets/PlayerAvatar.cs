@@ -25,7 +25,7 @@ public class PlayerAvatar : MonoBehaviour
         
         Debug.Log("Head Up: " + head.up);
         Debug.Log("Forward: " + head.forward);
-        Debug.Log("right: " +head.right);
+        Debug.Log("right: " + head.right);
     }
     void Update()
     {

@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/WhiteBoxScene.unity
+    path: Assets/Scenes/MultiplayerTestScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
     path: Assets/Scenes/IntroScene.unity
@@ -15,5 +15,5 @@ EditorBuildSettings:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 3042d4cf0d6994d77b970cc355ea7c89, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: d5f220bdfd53748c59d3ec4e7fbba00f, type: 2}
-    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 2b89f181d1399476b915e0ab9c63b270, type: 2}
+    com.unity.xr.openxr.settings4: {fileID: 11400000, guid: ae86d5c94962b984dad52d37535a024e, type: 2}
   m_UseUCBPForAssetBundles: 0

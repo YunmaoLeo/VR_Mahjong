@@ -5,7 +5,7 @@ using TMPro;
 
 public class Timer : MonoBehaviour
 {
-    [SerializeField] TurnManager TurnManager;
+    [SerializeField] GameManager GameManager;
     [SerializeField] TextMeshProUGUI timerText;
     [SerializeField] float timePerTurn;
     private float remainingTime;
@@ -22,12 +22,17 @@ public class Timer : MonoBehaviour
             timerText.color = Color.white;
             remainingTime -= Time.deltaTime;
         }
-        else if (remainingTime < 0)
+        else if (remainingTime == 0)
+        {
+            timerText.color = Color.red;
+            remainingTime -= Time.deltaTime;
+        }
+        else
         {
             remainingTime = 0;
-            timerText.color = Color.red;
-            TurnManager.nextTurn();
-            remainingTime = timePerTurn;
+            remainingTime = timePerTurn + 1;
+            // Next turn!
+            GameManager.evaluate();
         }
         
         int minutes = Mathf.FloorToInt(remainingTime / 60);

@@ -5,50 +5,126 @@ using System;
 
 public class BenchManager : MonoBehaviour
 {
-    [SerializeField] GameObject pieces;
-    [SerializeField] TurnManager TurnManager;
+    [SerializeField] Slots Slots;
     [SerializeField] int player;
+    [SerializeField] GameObject pieces;
 
-    private int numTiles, numScoringSets;
+    private Vector3[] slots;
     private Tile[] tiles;
+
+    void Start()
+    {
+        slots = Slots.getSlots();
+    }
+
+    private void Update()
+    {
+        tiles = checkBench();
+    }
+
+    public int getScore()
+    {
+        int sum = 0;
+        
+        foreach (Tile tile in tiles)
+        {
+            sum += tile.getScore();
+        }
+
+        return sum;
+    }
+
+    public void printBench()
+    {
+        Debug.Log("Bench: ");
+        int i = 1;
+        foreach (Tile tile in tiles)
+        {
+            Debug.Log("Tile #" + i + " on bench: " + tile.printTile());
+            i++;
+        }
+    }
+
+    private Tile[] checkBench()
+    {
+        List<Tile> nearbyTiles = new List<Tile>();
+
+        foreach (Vector3 slot in slots)
+        {
+            if (Slots.isSlotOccupied(slot))
+            {
+                var tileInSlot = Slots.getTileInSlot(slot);
+                if (tileInSlot != null)
+                {
+                    nearbyTiles.Add(tileInSlot);
+                }
+            }
+        }
+        return nearbyTiles.ToArray();
+    }
+
+    /**************************************** Old Functions *************************************/
+    /*
+    // [SerializeField] TurnManager TurnManager;
+    // [SerializeField] Canvas PlayerUI;
+    // IMPORTANT
+    private string pokeName1 = "[BuildingBlock] Poke Interaction Draw";
+    private string pokeName2 = "[BuildingBlock] Poke Interaction Play";
+
+    private int numTiles = 13;
+    private int numScoringSets;
+    
     private Tile[] tilesFromLastTurn;
     private Tile[] tilesRemovedOnNewTurn;
-
+    private bool dealt = false;
+    */
     // Dictionary to represent scoring sets
+    // private Dictionary<string, List<Tile[]>> scoringSets;
     /*
      * { "pung" : < [tile1, tile2, tile3], [...] > ,
      *   "chow" : < [tile10, tile11, tile12], [...] > ,
      *   "winds": < > }
      */
-    private Dictionary<string, List<Tile[]>> scoringSets;
-
+    /*
     void Start()
     {
-        // Get tiles
-        numTiles = transform.childCount;
-        tiles = new Tile[numTiles];
-        for (int i = 0; i < numTiles; i++)
-        {
-            tiles[i] = transform.GetChild(i).GetComponent<Tile>();
-        }
+        // Get slots
+        slots = Slots.getSlots();
 
         // Create an array for scoring sets. It will grow every time a player makes a valid set
         scoringSets = new Dictionary<string, List<Tile[]>>();
         numScoringSets = 0;
     }
 
-    // Update is called once per frame
     void Update()
     {
+        // Get tiles - only do this once
+        if (!dealt)
+        {
+            tiles = TurnManager.getHand();
+            // Add tiles as children to the "pieces" GameObject
+            foreach (Tile tile in tiles)
+            {
+                tile.transform.SetParent(pieces.transform);
+            }
+            // Set up tiles
+            setUp();
+            dealt = true;
+        }
+
+        // Regular turn
         tilesFromLastTurn = getCurrentHand();
         tilesRemovedOnNewTurn = getDifference(tilesFromLastTurn);
 
         if (isPlayerTurn())
         {
+            displayUI(true);
             checkCombos(tilesRemovedOnNewTurn);
         }
         else
         {
+            displayUI(false);
+
             // Player can still make a pung
             checkPung(tilesRemovedOnNewTurn);
 
@@ -63,6 +139,40 @@ public class BenchManager : MonoBehaviour
     bool isPlayerTurn()
     {
         return TurnManager.isPlayerTurn(player);
+    }
+
+    void displayUI(bool display)
+    {
+        PlayerUI.enabled = display;
+        PlayerUI.transform.Find(pokeName1).gameObject.SetActive(display);
+        PlayerUI.transform.Find(pokeName2).gameObject.SetActive(display);
+    }
+
+    public int getFirstEmptySlot()
+    {
+        // FUNCTION: Returns the first empty slot on the bench
+
+        int i = 0;
+        foreach (Vector3 slot in slots)
+        {
+            if (Slots.isSlotOccupied(slot))
+            {
+                Debug.Log("Slot " + i + " is occupied.");
+            }
+            else
+            {
+                Debug.Log("Slot " + i + " is free.");
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
+
+    public Vector3 getSlotAtIndex(int i)
+    {
+        //return Slots.getWorldPos(slots[i]);
+        return slots[i];
     }
 
     Tile[] getCurrentHand()
@@ -104,6 +214,8 @@ public class BenchManager : MonoBehaviour
 
     bool checkCombos(Tile[] tileSet)
     {
+        // FUNCTION: Checks whether the player discarded the right tiles to make a "pung" or "chow" during their turn
+
         if (checkPung(tileSet))
         {
             List<Tile[]> existingTileSets = scoringSets["pung"];
@@ -167,4 +279,15 @@ public class BenchManager : MonoBehaviour
         }
         return true;
     }
+
+    public void setUp()
+    {
+        // FUNCTION: Makes 13 tiles fly to their spots on a player's bench
+
+        for (int i = 0; i < tiles.Length; i++)
+        {
+            tiles[i].flyToPos(slots[i]);
+        }
+    }
+    */
 }

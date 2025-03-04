@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class NetworkController : NetworkBehaviour
 {
+    public static NetworkController Instance;
     [SerializeField] private List<Transform> possiblePositionsList;
     [SerializeField] private Transform CameraRigTransform;
     [SerializeField] private Transform HMDTransform;
@@ -41,12 +42,13 @@ public class NetworkController : NetworkBehaviour
     public float readyStatusDuration = 5.0f;
     private float _readyStatusTimer = 0.0f;
 
+    private Dictionary<int, int> PlayerPointDict = new Dictionary<int, int>();
     public bool IsGameRunning = false;
     
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        Instance = this;
     }
 
     public void OnConnectedToServer(NetworkRunner runner)
@@ -79,7 +81,13 @@ public class NetworkController : NetworkBehaviour
         // }
 
         IsPlayerReadyDict[player.PlayerId] = false;
+        PlayerPointDict[player.PlayerId] = 0;
         isConnected = true;
+    }
+
+    public void AddLocalPlayerPoints(int value)
+    {
+        PlayerPointDict[currentRunner.LocalPlayer.PlayerId] += value;
     }
 
     // Update is called once per frame
@@ -185,6 +193,8 @@ public class NetworkController : NetworkBehaviour
     public void SetLocalPlayerCharacter()
     {
         localCharacter.gameObject.SetActive(false);
+        var playerId = currentRunner.LocalPlayer.PlayerId;
+        PlayerAvatarsDict.Add(playerId, RemoteCharactersManager.Instance.avatarDict[playerId]);
         
         //set local camera
         var localPlayerID = currentRunner.LocalPlayer.PlayerId;

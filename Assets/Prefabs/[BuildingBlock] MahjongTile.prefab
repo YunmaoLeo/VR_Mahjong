@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockId: f8766c17-aaf8-4b55-9431-de8deea83842
-  instanceId: 69774ff8-7ea6-46f0-8064-d0f548956fa0
+  instanceId: bf770cab-df1f-4945-a44e-82908858a577
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: f8338144-8280-4ff6-9455-ae2bb9c20fe8
@@ -248,7 +248,7 @@ GameObject:
   - component: {fileID: 1123671786273257069}
   m_Layer: 0
   m_Name: '[BuildingBlock] MahjongTile'
-  m_TagString: Untagged
+  m_TagString: TestTile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -283,7 +283,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockId: e9b4b64f-1c7e-4dff-8f3c-ce409bdc3951
-  instanceId: 2d25e73f-4a39-4607-a34f-cb883014bc09
+  instanceId: b73cb5e0-4caf-4e82-930f-f2b2398c802a
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: 54548176-30f4-4a4a-8057-340a383c6102
@@ -388,7 +388,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
