@@ -9,7 +9,7 @@ public class SingleBench : MonoBehaviour
     [SerializeField] private TextMeshProUGUI pointText;
     
     private int _currentScore = 0;
-    private List<MahjongTile> _tiles = new List<MahjongTile>();
+    public List<MahjongTile> _tiles = new List<MahjongTile>();
 
     private void Start()
     {

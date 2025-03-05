@@ -28,6 +28,11 @@ public class TilesGenerator : MonoBehaviour
 
         public TileType Type;
         public int Value;
+
+        public string GetSpriteName()
+        {
+            return Type.ToString().ToLower() + Value.ToString();
+        }
     }
 
     public List<TileInfo> AllTiles = new List<TileInfo>();

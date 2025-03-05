@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockId: f8766c17-aaf8-4b55-9431-de8deea83842
-  instanceId: bf770cab-df1f-4945-a44e-82908858a577
+  instanceId: cbae8636-c811-4772-b119-d11626bf3155
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: f8338144-8280-4ff6-9455-ae2bb9c20fe8
@@ -236,6 +236,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7374715207163471658}
+  - component: {fileID: 7124889319610045437}
   - component: {fileID: 8285265240114166604}
   - component: {fileID: 1592645308725370022}
   - component: {fileID: 8967395924059143373}
@@ -270,6 +271,28 @@ Transform:
   - {fileID: 7379177898937094807}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -162.187, z: 180}
+--- !u!114 &7124889319610045437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6925436922573653970}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a36255d157a64fd88feb3a3e13ba731, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isDebugMode: 0
+  type: 0
+  point: 1
+  tileSprite: {fileID: 0}
+  tileFaceRenderer: {fileID: 8016747774349056373}
+  handGrabObject: {fileID: 823401220292886354}
+  grabbable: {fileID: 8073594885856555662}
+  tileColor: {r: 0.033018887, g: 0.8021378, b: 1, a: 1}
+  Point: 5
+  debug_isGrab: 1
 --- !u!114 &8285265240114166604
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -283,7 +306,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockId: e9b4b64f-1c7e-4dff-8f3c-ce409bdc3951
-  instanceId: b73cb5e0-4caf-4e82-930f-f2b2398c802a
+  instanceId: c87802d6-0a33-4ba7-bbd6-0e2ccae3a36a
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: 54548176-30f4-4a4a-8057-340a383c6102
