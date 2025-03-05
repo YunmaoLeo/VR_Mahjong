@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -8,6 +9,7 @@ public class SingleBench : MonoBehaviour
     [SerializeField] private TextMeshProUGUI pointText;
     
     private int _currentScore = 0;
+    private List<MahjongTile> _tiles = new List<MahjongTile>();
 
     private void Start()
     {
@@ -21,18 +23,15 @@ public class SingleBench : MonoBehaviour
         pointText.text = _currentScore.ToString();
     }
 
-    public void AddPoint(int point)
+    public void AssignNewMahjong(MahjongTile tile)
     {
-        _currentScore += point;
-        UpdateTextAppearance();
-        if (!pointText.gameObject.activeInHierarchy)
-        {
-            pointText.gameObject.SetActive(true);
-            pointText.transform.DOScale(Vector3.one, 0.2f);
-        }
-        
-        
+        _tiles.Add(tile);
     }
-    
-    
+
+    public void RemoveMahjong(MahjongTile tile)
+    {
+        _tiles.Remove(tile);
+    }
+
+
 }
