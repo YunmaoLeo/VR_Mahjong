@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockId: f8766c17-aaf8-4b55-9431-de8deea83842
-  instanceId: cbae8636-c811-4772-b119-d11626bf3155
+  instanceId: 66224bf2-eb13-4c60-9264-33843592bbeb
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: f8338144-8280-4ff6-9455-ae2bb9c20fe8
@@ -284,15 +284,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isDebugMode: 0
-  type: 0
-  point: 1
-  tileSprite: {fileID: 0}
+  _Type: 0
+  _Point: 0
   tileFaceRenderer: {fileID: 8016747774349056373}
   handGrabObject: {fileID: 823401220292886354}
   grabbable: {fileID: 8073594885856555662}
+  rb: {fileID: 4164283445510959258}
+  collideSlots: []
   tileColor: {r: 0.033018887, g: 0.8021378, b: 1, a: 1}
-  Point: 5
-  debug_isGrab: 1
+  debug_isGrab: 0
 --- !u!114 &8285265240114166604
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -306,7 +306,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockId: e9b4b64f-1c7e-4dff-8f3c-ce409bdc3951
-  instanceId: c87802d6-0a33-4ba7-bbd6-0e2ccae3a36a
+  instanceId: e226dab5-fef6-4fd4-a8cb-93763b5472c0
   version: 1
   installationRoutineCheckpoint:
     _installationRoutineId: 54548176-30f4-4a4a-8057-340a383c6102
@@ -412,7 +412,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -446,6 +446,7 @@ MonoBehaviour:
   Flags: 524289
   NestedObjects: []
   NetworkedBehaviours:
+  - {fileID: 7124889319610045437}
   - {fileID: 415737645690095376}
   - {fileID: 4395220056159009409}
   ForceRemoteRenderTimeframe: 0

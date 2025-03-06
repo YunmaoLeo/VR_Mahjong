@@ -16,6 +16,6 @@ public class BenchCollection : MonoBehaviour
 
     public void EnableLocalBench(int playerId)
     {
-        BenchList[playerId].gameObject.SetActive(true);
+        BenchList[playerId].EnableBench();
     }
 }

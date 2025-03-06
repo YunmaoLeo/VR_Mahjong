@@ -1,16 +1,25 @@
 using System;
 using System.Collections.Generic;
+using Fusion;
 using UnityEngine;
+using Object = System.Object;
 using Random = System.Random;
 
 public class TilesGenerator : MonoBehaviour
 {
-    
-    [SerializeField] private List<Sprite> tileSprites;
-    [SerializeField] private Transform tilePrefab;
+    [SerializeField] private NetworkObject tilePrefab;
     [SerializeField] private Transform tileSpawnPoint;
-    
     public static TilesGenerator Instance;
+
+    [SerializeField] private bool debug_shouldGenerate;
+
+    [SerializeField] private float tileSize = 0.3f;    
+    [SerializeField] private float tileHeight = 0.1f;
+
+    
+    [SerializeField] private float wallLength = 13 * 0.3f;
+    [SerializeField] private float wallOffset = 0.8f;
+
     public enum TileType
     {
         Bamboo,
@@ -18,7 +27,7 @@ public class TilesGenerator : MonoBehaviour
         Tri,
     }
 
-    public class TileInfo
+    public class TileInfo : System.Object
     {
         public TileInfo(TileType type, int v)
         {
@@ -33,6 +42,26 @@ public class TilesGenerator : MonoBehaviour
         {
             return Type.ToString().ToLower() + Value.ToString();
         }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj == null || GetType() != obj.GetType()) return false;
+            
+            TileInfo other = (TileInfo)obj;
+            return Type == other.Type && Value == other.Value;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 23 + Type.GetHashCode();
+                hash = hash * 23 + Value.GetHashCode();
+                return hash;
+            }
+        }
     }
 
     public List<TileInfo> AllTiles = new List<TileInfo>();
@@ -43,30 +72,35 @@ public class TilesGenerator : MonoBehaviour
         Instance = this;
     }
 
-
     public void GenerateTilesAndShuffle(int seed)
     {
-        var newTile = Instantiate(tilePrefab);
         
-        return;
+        var runner = NetworkController.Instance.GetRunner();
+
+        Vector3[] wallPositions =
+        {
+            new Vector3(wallOffset, 0, 0), // Ease
+            new Vector3(0, 0, -wallOffset), // South
+            new Vector3(-wallOffset, 0, 0), // West
+            new Vector3(0, 0, wallOffset) // North
+        };
+
+        Quaternion[] wallRotations =
+        {
+            Quaternion.Euler(0, 90, 0), // Ease
+            Quaternion.Euler(0, 180, 0), // South
+            Quaternion.Euler(0, -90, 0), // West
+            Quaternion.Euler(0, 0, 0), // North
+        };
+        
+                
         for (int i = 0; i < 4; i++)
         {
-            foreach (var ts in tileSprites)
+            for (int j = 1; j <= 9; j++)
             {
-                var value = int.Parse(ts.name.Substring(ts.name.Length - 1));
-                var title = ts.name.Substring(0, ts.name.Length - 1);
-                switch (title)
-                {
-                    case "bamboo":
-                        AllTiles.Add(new TileInfo(TileType.Bamboo, value));
-                        break;
-                    case "dot":
-                        AllTiles.Add(new TileInfo(TileType.Dot, value));
-                        break;
-                    case "tri":
-                        AllTiles.Add(new TileInfo(TileType.Tri, value));
-                        break;
-                }
+                AllTiles.Add(new TileInfo(TileType.Bamboo, j));
+                AllTiles.Add(new TileInfo(TileType.Dot, j));
+                AllTiles.Add(new TileInfo(TileType.Tri, j));
             }
         }
 
@@ -79,6 +113,29 @@ public class TilesGenerator : MonoBehaviour
             int k = rng.Next(n + 1);
             (AllTiles[k], AllTiles[n]) = (AllTiles[n], AllTiles[k]);
         }
+
+        int tileIndex = 0;
+        
+        for (int wall = 0; wall < 4; wall++)
+        {
+            Vector3 wallStartPos = wallPositions[wall]; // 当前墙的起点
+            Quaternion wallRotation = wallRotations[wall]; // 当前墙的朝向
+
+            for (int col = 0; col < 13; col++) // 13 列
+            {
+                for (int row = 0; row < 2; row++) // 2 层
+                {
+                    Vector3 offset = new Vector3(col * tileSize - (wallLength / 2), row * tileHeight, 0);
+                    Vector3 tilePosition = wallStartPos + wallRotation * offset; 
+                    NetworkObject tile = runner.Spawn(tilePrefab, tilePosition+tileSpawnPoint.position, wallRotation, PlayerRef.None);
+                    var mahjongTile = tile.GetComponent<MahjongTile>();
+                    mahjongTile.TileInfo = AllTiles[tileIndex];
+                    mahjongTile.Point = AllTiles[tileIndex].Value;
+                    mahjongTile.Type = AllTiles[tileIndex].Type;
+                    tileIndex++;
+                }
+            }
+        }
         
         
     }
@@ -86,5 +143,10 @@ public class TilesGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (debug_shouldGenerate)
+        {
+            GenerateTilesAndShuffle(42);
+            debug_shouldGenerate = false;
+        }
     }
 }

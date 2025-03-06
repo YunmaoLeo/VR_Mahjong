@@ -34,7 +34,7 @@ public class NetworkController : NetworkBehaviour
     [SerializeField] private MeshRenderer hatRenderer;
     
     [SerializeField] private float accessoryUpdateDuration = 0.2f;
-
+    
     private float _accessoryUpdateCd = 0.0f;
     
     public Dictionary<int, bool> IsPlayerReadyDict = new Dictionary<int, bool>();
@@ -44,7 +44,11 @@ public class NetworkController : NetworkBehaviour
 
     private Dictionary<int, int> PlayerPointDict = new Dictionary<int, int>();
     public bool IsGameRunning = false;
-    
+
+    public NetworkRunner GetRunner()
+    {
+        return currentRunner;
+    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -59,27 +63,6 @@ public class NetworkController : NetworkBehaviour
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
-        // Debug.Log($"OnPlayerJoined with ID: {player.PlayerId}");
-        // //set current camera location
-        // var spawnPoint = possiblePositionsList[player.PlayerId - 1];
-        // if (player == runner.LocalPlayer)
-        // {
-        //     CameraRigTransform.SetParent(spawnPoint.transform);
-        //     CameraRigTransform.localPosition = Vector3.zero;
-        //     CameraRigTransform.localRotation = Quaternion.identity;
-        // }
-        // // initialize other player's character
-        // // else
-        // {
-        //     var characterTransform = possibleCharacterList[player.PlayerId - 1];
-        //     var character = Instantiate(characterTransform);
-        //     character.SetParent(spawnPoint.transform);
-        //     character.localPosition = Vector3.zero;
-        //     character.localRotation = Quaternion.identity;
-        //     
-        //     PlayerAvatarsDict.Add(player.PlayerId, character.GetComponent<PlayerAvatar>());
-        // }
-
         IsPlayerReadyDict[player.PlayerId] = false;
         PlayerPointDict[player.PlayerId] = 0;
         isConnected = true;
@@ -93,13 +76,84 @@ public class NetworkController : NetworkBehaviour
     // Update is called once per frame
 
     public bool needReady = false;
+
+    public enum GameState
+    {
+        ReadyToStart,
+        GenerateTiles,
+        PickTiles,
+        DropTiles,
+        CalculateFinalScore,
+    }
+
+    private float readyToStartTimer = 0.0f;
+    private float readyToStartDuration = 2.0f;
+
+    private float generateTilesTimer = 0.0f;
+    private float generateTilesDuration = 5.0f;
+
+    private float pickTilesTimer = 0.0f;
+    private float pickTilesDuration = 60.0f;
+
+    private float dropTilesTimer = 0.0f;
+    private float dropTilesDuration = 30.0f;
+
+    private float calculateFinalScoreTimer = 0.0f;
+    private float calculateFinalScoreDuration = 10.0f;
+    
+    private GameState _currentGameState = GameState.ReadyToStart;
+
+    public void GameStateUpdate()
+    {
+        return;
+        switch (_currentGameState)
+        {
+            case GameState.ReadyToStart:
+                readyToStartTimer += Time.deltaTime;
+                if (readyToStartTimer >= readyToStartDuration)
+                {
+                    _currentGameState = GameState.GenerateTiles;
+                }
+                break;
+            case GameState.GenerateTiles:
+                // do generate tiles
+                if (generateTilesTimer <= 0)
+                {
+                    //generate tiles
+                    if (currentRunner.LocalPlayer.PlayerId == 1)
+                    {
+                        TilesGenerator.Instance.GenerateTilesAndShuffle(42);
+                    }
+
+                }
+                generateTilesTimer += Time.deltaTime;
+                
+                if (generateTilesTimer >= generateTilesDuration)
+                {
+                    _currentGameState = GameState.PickTiles;
+                }
+                
+                break;
+            case GameState.PickTiles:
+                break;
+            case GameState.DropTiles:
+                break;
+            case GameState.CalculateFinalScore:
+                break;
+        }
+    }
+    
     void FixedUpdate()
     {
         if (!isConnected)
         {
             return;
         }
+        
+        GameStateUpdate();
 
+        
+        //handles avatar update things in game running mode
         if (IsGameRunning)
         {
             // update current HMDInfo and hand Info
