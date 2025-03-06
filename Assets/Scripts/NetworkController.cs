@@ -171,6 +171,11 @@ public class NetworkController : NetworkBehaviour
                     //get local bench
                 }
                 calculateFinalScoreTimer += Time.deltaTime;
+                if (calculateFinalScoreTimer >= calculateFinalScoreDuration)
+                {
+                    _currentGameState = GameState.PickTiles;
+                    calculateFinalScoreTimer = 0.0f;
+                }
                 
                 
                 

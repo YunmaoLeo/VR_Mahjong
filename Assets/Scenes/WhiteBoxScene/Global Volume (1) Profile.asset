@@ -15,7 +15,7 @@ MonoBehaviour:
   active: 1
   distance:
     m_OverrideState: 1
-    m_Value: 346
+    m_Value: 465
   baseHeight:
     m_OverrideState: 1
     m_Value: -513.7
@@ -48,7 +48,7 @@ MonoBehaviour:
     m_Value: {r: 0.25318265, g: 0.9298089, b: 1.3816538, a: 1}
   enableAdditionalLightsContribution:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   maxSteps:
     m_OverrideState: 1
     m_Value: 8
