@@ -45,6 +45,9 @@ public class NetworkController : NetworkBehaviour
     private Dictionary<int, int> PlayerPointDict = new Dictionary<int, int>();
     public bool IsGameRunning = false;
 
+    [SerializeField] private string pickTileHelpInfo = "Please randomly pick 8 tiles.";
+    [SerializeField] private string dropTileHelpInfo = "Please drop and pick at most 4 tiles.";
+    
     public NetworkRunner GetRunner()
     {
         return currentRunner;
@@ -93,22 +96,26 @@ public class NetworkController : NetworkBehaviour
     private float generateTilesDuration = 5.0f;
 
     private float pickTilesTimer = 0.0f;
-    private float pickTilesDuration = 60.0f;
+    [SerializeField] private float pickTilesDuration = 60.0f;
 
     private float dropTilesTimer = 0.0f;
-    private float dropTilesDuration = 30.0f;
+    [SerializeField] private float dropTilesDuration = 30.0f;
 
     private float calculateFinalScoreTimer = 0.0f;
     private float calculateFinalScoreDuration = 10.0f;
     
-    private GameState _currentGameState = GameState.ReadyToStart;
+    [SerializeField] private GameState _currentGameState = GameState.ReadyToStart;
 
     public void GameStateUpdate()
     {
-        return;
         switch (_currentGameState)
         {
             case GameState.ReadyToStart:
+                if (readyToStartTimer <= 0)
+                {
+                    //enable local bench
+                    BenchCollection.Instance.EnableSpecificBench(currentRunner.LocalPlayer.PlayerId);
+                }
                 readyToStartTimer += Time.deltaTime;
                 if (readyToStartTimer >= readyToStartDuration)
                 {
@@ -132,16 +139,47 @@ public class NetworkController : NetworkBehaviour
                 {
                     _currentGameState = GameState.PickTiles;
                 }
-                
                 break;
             case GameState.PickTiles:
+                pickTilesTimer += Time.deltaTime;
+                
+                GameInfoTextManager.Instance.ShowGameHelpInfo(pickTileHelpInfo + "\n" + (pickTilesDuration - pickTilesTimer).ToString("0.00"));
+                if (pickTilesTimer >= pickTilesDuration)
+                {
+                    _currentGameState = GameState.DropTiles;
+                    GameInfoTextManager.Instance.HideHelpInfo();
+                    pickTilesTimer = 0.0f;
+                }
                 break;
             case GameState.DropTiles:
+                dropTilesTimer += Time.deltaTime;
+                GameInfoTextManager.Instance.ShowGameHelpInfo(dropTileHelpInfo + "\n" + (dropTilesDuration - dropTilesTimer).ToString("0.00"));
+                
+                if (dropTilesTimer >= dropTilesDuration)
+                {
+                    _currentGameState = GameState.CalculateFinalScore;
+                    GameInfoTextManager.Instance.HideHelpInfo();
+                    dropTilesTimer = 0.0f;
+                }
                 break;
             case GameState.CalculateFinalScore:
+                if (calculateFinalScoreTimer <= 0)
+                {
+                    var bench = BenchCollection.Instance.GetSpecificBench(currentRunner.LocalPlayer.PlayerId);
+                    bench.StartCalculateScore();
+                    //calculate score and show
+                    //get local bench
+                }
+                calculateFinalScoreTimer += Time.deltaTime;
+                
+                
+                
+                
                 break;
         }
     }
+    
+    
     
     void FixedUpdate()
     {
@@ -149,10 +187,12 @@ public class NetworkController : NetworkBehaviour
         {
             return;
         }
-        
-        GameStateUpdate();
 
-        
+
+        if (IsGameRunning)
+        {
+            GameStateUpdate();
+        }
         //handles avatar update things in game running mode
         if (IsGameRunning)
         {
@@ -172,8 +212,6 @@ public class NetworkController : NetworkBehaviour
                 rightHandPos, rightHandRot, leftHandPos, leftHandRot);
             
         }
-        
-
 
         // handle things in lobby room.
         if (IsGameRunning)
@@ -248,7 +286,7 @@ public class NetworkController : NetworkBehaviour
     {
         localCharacter.gameObject.SetActive(false);
         var playerId = currentRunner.LocalPlayer.PlayerId;
-        PlayerAvatarsDict.Add(playerId, RemoteCharactersManager.Instance.avatarDict[playerId]);
+        // PlayerAvatarsDict.Add(playerId, RemoteCharactersManager.Instance.avatarDict[playerId]);
         
         //set local camera
         var localPlayerID = currentRunner.LocalPlayer.PlayerId;
@@ -278,6 +316,20 @@ public class NetworkController : NetworkBehaviour
                 
                 character.gameObject.SetActive(true);
             }
+        }
+    }
+
+    public void BroadcastCurrentPlayerScoreInfo(int score)
+    {
+        RPC_UpdatePlayerScoreInfo(currentRunner.LocalPlayer.PlayerId, score);
+    }
+
+    [Rpc(sources: RpcSources.All, targets: RpcTargets.All)]
+    public void RPC_UpdatePlayerScoreInfo(int playerId, int score)
+    {
+        if (playerId != currentRunner.LocalPlayer.PlayerId)
+        {
+            GameInfoTextManager.Instance.UpdatePlayerInfoText(playerId, score);
         }
     }
 
@@ -344,7 +396,7 @@ public class NetworkController : NetworkBehaviour
     {
         if (currentRunner.LocalPlayer.PlayerId != playerId)
         {
-            var character = PlayerAvatarsDict[playerId];
+            var character = RemoteCharactersManager.Instance.GetPlayerAvatar(playerId);
             Quaternion offsetRotation = Quaternion.Euler(180, 90, 0);
             character.RightHandTarget.position = rightHandPos;
             character.RightHandTarget.localRotation = rightHandRotation * offsetRotation;

@@ -12,13 +12,13 @@ public class GameInfoTextManager : MonoBehaviour
     [SerializeField] private List<TextMeshProUGUI> playerScoreTextList;
     void Start()
     {
-        
+        Instance = this;
     }
-    public void UpdatePlayerInfoText(int playerId)
+    public void UpdatePlayerInfoText(int playerId, int score)
     {
         var text = playerScoreTextList[playerId - 1];
         text.gameObject.SetActive(true);
-        text.text = playerId.ToString();
+        text.text = score.ToString();
     }
 
     IEnumerator HideInfoTextWithDelay(float delay)
@@ -35,7 +35,13 @@ public class GameInfoTextManager : MonoBehaviour
         StartCoroutine(HideInfoTextWithDelay(duration));
     }
 
-    public void ShowHelpInfo()
+    public void ShowGameHelpInfo(string info)
+    {
+        ShowHelpInfo();
+        gameInfoText.text = info;
+    }
+
+    private void ShowHelpInfo()
     {
         gameInfoText.gameObject.SetActive(true);
     }

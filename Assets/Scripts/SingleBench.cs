@@ -32,7 +32,6 @@ public class SingleBench : MonoBehaviour
     public void EnableBench()
     {
         snapSlotList.ForEach(slot => slot.gameObject.SetActive(true));
-        this.enabled = true;
     }
     
     private void Start()
@@ -57,6 +56,7 @@ public class SingleBench : MonoBehaviour
     public void AddScore(int score)
     {
         _currentScore += score;
+        NetworkController.Instance.BroadcastCurrentPlayerScoreInfo(_currentScore);
         UpdateTextAppearance();
     }
 
@@ -119,6 +119,11 @@ public class SingleBench : MonoBehaviour
     {
         ShowText();
         //create a set and iterate all tiles
+        foreach (var tile in _tileList)
+        {
+            tile.TileInfo = new TileInfo(tile.Type, tile.Point);
+        }
+        
         Dictionary<TileInfo, int> tileCountsDict = new Dictionary<TileInfo, int>();
         
         Sequence mainSequence = DOTween.Sequence();

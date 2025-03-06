@@ -101,7 +101,7 @@ public class MahjongTile : NetworkBehaviour
                             }
                             else
                             {
-                                spriteName = TileInfo.GetSpriteName();
+                                spriteName = Type.ToString().ToLower() + Point.ToString();
                             }
 
                             var sprite = MahjongTileTextureManager.Instance.GetSprite(spriteName).texture;

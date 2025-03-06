@@ -282,6 +282,16 @@ MonoBehaviour:
   comboScaleMultiplier: 1.15
   comboTileDistanceMultiplier: 0.18
   debug_needTestComboCalculate: 0
+  snapSlotList:
+  - {fileID: 4515408337121460569}
+  - {fileID: 6426055719191827483}
+  - {fileID: 8388016876566519102}
+  - {fileID: 5694799879902144928}
+  - {fileID: 1243048190491243715}
+  - {fileID: 8959041042763034276}
+  - {fileID: 495553934772262109}
+  - {fileID: 1779592448629128830}
+  - {fileID: 8180618503038317814}
   _tileList: []
 --- !u!1 &5225963210849352222
 GameObject:
