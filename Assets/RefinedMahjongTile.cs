@@ -36,6 +36,7 @@ public class RefinedMahjongTile : MonoBehaviour
 
     private bool _isInGrab = false;
     private int _isInThrowArea = 0;
+    private int _isInFunctionArea = 0;
     
     public void InitializeMahjongModel()
     {
@@ -76,6 +77,11 @@ public class RefinedMahjongTile : MonoBehaviour
             Debug.Log("is in throw area");
             _isInThrowArea++;
         }
+
+        if (other.CompareTag("FunctionArea"))
+        {
+            _isInFunctionArea++;
+        }
     }
 
     private void OnTriggerStay(Collider other)
@@ -87,6 +93,11 @@ public class RefinedMahjongTile : MonoBehaviour
         if (other.CompareTag("ThrowArea"))
         {
             _isInThrowArea--;
+        }        
+        
+        if (other.CompareTag("FunctionArea"))
+        {
+            _isInFunctionArea--;
         }
     }
 

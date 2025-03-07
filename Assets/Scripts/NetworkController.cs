@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using DG.Tweening;
 using Fusion;
 using Unity.Networking.Transport;
 using UnityEngine;
@@ -84,9 +86,8 @@ public class NetworkController : NetworkBehaviour
     {
         ReadyToStart,
         GenerateTiles,
-        PickTiles,
-        DropTiles,
-        CalculateFinalScore,
+        DrawTiles,
+        StartTurn,
     }
 
     private float readyToStartTimer = 0.0f;
@@ -94,6 +95,13 @@ public class NetworkController : NetworkBehaviour
 
     private float generateTilesTimer = 0.0f;
     private float generateTilesDuration = 5.0f;
+
+    private int drawTilesTotalCount = 0;
+    private float drawTilesTimer = 0;
+    private float drawTilesDuration = 0.4f;
+    [SerializeField] private int initialDrawCount = 13;
+    private int initialDrawIndex = 1;
+    private int currentDrawId = 1;
 
     private float pickTilesTimer = 0.0f;
     [SerializeField] private float pickTilesDuration = 60.0f;
@@ -106,17 +114,17 @@ public class NetworkController : NetworkBehaviour
     
     [SerializeField] private GameState _currentGameState = GameState.ReadyToStart;
 
+    private int currentTurnId = 1;
+    private int prevTurnId = 0;
+
+    [SerializeField] private Transform currentTurnUI;
+    
     public void GameStateUpdate()
     {
         switch (_currentGameState)
         {
             case GameState.ReadyToStart:
-                if (readyToStartTimer <= 0)
-                {
-                    //enable local bench
-                    BenchCollection.Instance.EnableSpecificBench(currentRunner.LocalPlayer.PlayerId);
-                }
-                readyToStartTimer += Time.deltaTime;
+                readyToStartTimer += Time.fixedDeltaTime;
                 if (readyToStartTimer >= readyToStartDuration)
                 {
                     _currentGameState = GameState.GenerateTiles;
@@ -126,66 +134,107 @@ public class NetworkController : NetworkBehaviour
                 // do generate tiles
                 if (generateTilesTimer <= 0)
                 {
-                    //generate tiles
-                    if (currentRunner.LocalPlayer.PlayerId == 1)
-                    {
-                        TilesGenerator.Instance.GenerateTilesAndShuffle(42);
-                    }
-
+                    TilesGenerator.Instance.GenerateTilesAndShuffle(42);
                 }
-                generateTilesTimer += Time.deltaTime;
+                generateTilesTimer += Time.fixedDeltaTime;
                 
                 if (generateTilesTimer >= generateTilesDuration)
                 {
-                    _currentGameState = GameState.PickTiles;
+                    _currentGameState = GameState.DrawTiles;
                 }
                 break;
-            case GameState.PickTiles:
-                pickTilesTimer += Time.deltaTime;
-                
-                GameInfoTextManager.Instance.ShowGameHelpInfo(pickTileHelpInfo + "\n" + (pickTilesDuration - pickTilesTimer).ToString("0.00"));
-                if (pickTilesTimer >= pickTilesDuration)
+            case GameState.DrawTiles:
+                drawTilesTimer += Time.fixedDeltaTime;
+                if (drawTilesTimer > drawTilesDuration)
                 {
-                    _currentGameState = GameState.DropTiles;
-                    GameInfoTextManager.Instance.HideHelpInfo();
-                    pickTilesTimer = 0.0f;
+                    drawTilesTimer = 0f;
+                    var bench = RefinedBenchCollection.Instance.GetSpecificBench(currentDrawId);
+                    bench.DrawTile();
+                    currentDrawId++;
+                    currentDrawId = currentDrawId % currentRunner.ActivePlayers.Count() + 1;
+                    initialDrawIndex++;
                 }
+                else
+                {
+                    return;
+                }
+                
+                drawTilesTotalCount = currentRunner.ActivePlayers.Count() * initialDrawCount;
+                
+
+
+                if (initialDrawIndex >= drawTilesTotalCount)
+                {
+                    _currentGameState = GameState.StartTurn;
+                }
+                
                 break;
-            case GameState.DropTiles:
-                dropTilesTimer += Time.deltaTime;
-                GameInfoTextManager.Instance.ShowGameHelpInfo(dropTileHelpInfo + "\n" + (dropTilesDuration - dropTilesTimer).ToString("0.00"));
-                
-                if (dropTilesTimer >= dropTilesDuration)
+            
+            
+            case GameState.StartTurn:
+                if (prevTurnId != currentTurnId)
                 {
-                    _currentGameState = GameState.CalculateFinalScore;
-                    GameInfoTextManager.Instance.HideHelpInfo();
-                    dropTilesTimer = 0.0f;
+                    //change current turn image position;
+                    currentTurnUI.gameObject.SetActive(true);
+                    currentTurnUI.transform.DOMove(possiblePositionsList[currentTurnId - 1].position 
+                                                   + new Vector3(0,8.0f,0), 0.25f);
+                    
+                    //end change ui
+                    
+                    prevTurnId = currentTurnId;
+                    
+                    var bench = RefinedBenchCollection.Instance.GetSpecificBench(
+                        currentTurnId);
+                    bench.DrawTile();
+                    //if is current user
+                    if (currentTurnId == currentRunner.LocalPlayer.PlayerId)
+                    {
+                        bench.StartTurn();
+                    }
                 }
-                break;
-            case GameState.CalculateFinalScore:
-                if (calculateFinalScoreTimer <= 0)
-                {
-                    var bench = BenchCollection.Instance.GetSpecificBench(currentRunner.LocalPlayer.PlayerId);
-                    bench.StartCalculateScore();
-                    //calculate score and show
-                    //get local bench
-                }
-                calculateFinalScoreTimer += Time.deltaTime;
-                if (calculateFinalScoreTimer >= calculateFinalScoreDuration)
-                {
-                    _currentGameState = GameState.PickTiles;
-                    calculateFinalScoreTimer = 0.0f;
-                }
-                
-                
-                
-                
+
                 break;
         }
     }
+
+    public void BroadcastThrowTile(TilesGenerator.TileInfo tileInfo)
+    {
+        RPC_ThrowTile(currentRunner.LocalPlayer.PlayerId, tileInfo.Type, tileInfo.Value);
+    }
+
+    [Rpc(sources: RpcSources.All, targets: RpcTargets.All)]
+    public void RPC_ThrowTile(int playerId, TilesGenerator.TileType type, int value)
+    {
+        if (playerId != currentRunner.LocalPlayer.PlayerId)
+        {
+            var bench = RefinedBenchCollection.Instance.GetSpecificBench(
+                currentTurnId);
+            bench.ThrowTileAccordingTypeInfo(type, value);
+        }
+    }
     
+    public void Broadcast_EndTurn()
+    {
+        currentTurnId++;
+        currentTurnId = currentTurnId % currentRunner.ActivePlayers.Count()+1;
+        RPC_EndTurn(currentRunner.LocalPlayer.PlayerId);
+    }
     
-    
+
+    [Rpc(sources: RpcSources.All, targets: RpcTargets.All)]
+    public void RPC_EndTurn(int playerId)
+    {
+        if (playerId != currentRunner.LocalPlayer.PlayerId)
+        {
+            currentTurnId++;
+            currentTurnId = currentTurnId % currentRunner.ActivePlayers.Count()+1;
+        }
+    }
+
+
+
+
+
     void FixedUpdate()
     {
         if (!isConnected)
@@ -194,13 +243,17 @@ public class NetworkController : NetworkBehaviour
         }
 
 
-        if (IsGameRunning)
+        if (IsGameRunning || isInGameMode)
         {
             GameStateUpdate();
         }
+
+        return;
+
         //handles avatar update things in game running mode
         if (IsGameRunning)
         {
+            return;
             // update current HMDInfo and hand Info
             var rotation = Quaternion.LookRotation(HMDTransform.forward);
             // var lookDirection = HMDTransform.position - HMDTransform.forward * 10f;

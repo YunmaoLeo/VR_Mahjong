@@ -12,6 +12,7 @@ TagManager:
   - SingleSnapSlot
   - RefinedTile
   - ThrowArea
+  - FunctionArea
   layers:
   - Default
   - TransparentFX

@@ -27,7 +27,7 @@ public class RefinedSnapSlot : MonoBehaviour
         {
             tile.EnablePhysicsComponents();
         });
-        tile.transform.DORotate(this.transform.rotation.eulerAngles, drawTileSpeed / 3);
+        tile.transform.DORotate(this.transform.rotation.eulerAngles,0.0f);
     }
 
     public void ResetCurrentTilePosition()
@@ -57,7 +57,11 @@ public class RefinedSnapSlot : MonoBehaviour
         CurrentTile.IsInBench = false;
         CurrentTile.DisablePhysicsComponents();
         TileThrowArea.Instance.ThrowTile(CurrentTile);
-        CurrentTile = null;
         
+        
+        parentBench.OnThrowTileEvent(CurrentTile.TileInfo);
+        CurrentTile = null;
+
+
     }
 }
