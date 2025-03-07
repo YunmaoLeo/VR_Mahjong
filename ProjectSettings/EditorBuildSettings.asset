@@ -6,11 +6,11 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/IntroScene.unity
-    guid: e6df1dc1619b24c8fa946ec8bc1ce1e1
-  - enabled: 1
     path: Assets/Scenes/MultiplayerTestScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
+  - enabled: 1
+    path: Assets/Scenes/IntroScene.unity
+    guid: e6df1dc1619b24c8fa946ec8bc1ce1e1
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: 3042d4cf0d6994d77b970cc355ea7c89, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

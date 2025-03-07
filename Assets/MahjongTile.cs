@@ -48,7 +48,14 @@ public class MahjongTile : NetworkBehaviour
 
     public void DestroyTile()
     {
-        this.gameObject.SetActive(false);
+        if (isInSnap)
+        {
+            foreach (var collideSlot in collideSlots)
+            {
+                collideSlot.GetComponent<SingleSnapSlot>().RemoveTile(this);
+            }
+        }
+        NetworkController.Instance.GetRunner().Despawn(this.GetComponent<NetworkObject>());
     }
 
     private void OnTriggerStay(Collider other)
