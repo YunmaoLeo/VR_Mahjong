@@ -200,7 +200,7 @@ public class RefinedSingleBench : MonoBehaviour
                 if (!slot.IsEmpty()) first = slot;
             }
 
-            ThrowTile(first);
+            first.ThrowTile();
         }
     }
 

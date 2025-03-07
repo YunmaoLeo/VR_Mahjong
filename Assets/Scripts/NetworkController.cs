@@ -114,7 +114,7 @@ public class NetworkController : NetworkBehaviour
     
     [SerializeField] private GameState _currentGameState = GameState.ReadyToStart;
 
-    private int currentTurnId = 1;
+    public int currentTurnId = 1;
     private int prevTurnId = 0;
 
     [SerializeField] private Transform currentTurnUI;
@@ -150,8 +150,9 @@ public class NetworkController : NetworkBehaviour
                     drawTilesTimer = 0f;
                     var bench = RefinedBenchCollection.Instance.GetSpecificBench(currentDrawId);
                     bench.DrawTile();
-                    currentDrawId++;
-                    currentDrawId = currentDrawId % currentRunner.ActivePlayers.Count() + 1;
+                    
+                    currentDrawId = (currentDrawId % currentRunner.ActivePlayers.Count()) + 1;
+                    Debug.Log("current DrawId: " + currentDrawId);
                     initialDrawIndex++;
                 }
                 else
@@ -208,25 +209,24 @@ public class NetworkController : NetworkBehaviour
         if (playerId != currentRunner.LocalPlayer.PlayerId)
         {
             var bench = RefinedBenchCollection.Instance.GetSpecificBench(
-                currentTurnId);
+                playerId);
             bench.ThrowTileAccordingTypeInfo(type, value);
         }
     }
     
     public void Broadcast_EndTurn()
     {
-        currentTurnId++;
         currentTurnId = currentTurnId % currentRunner.ActivePlayers.Count()+1;
-        RPC_EndTurn(currentRunner.LocalPlayer.PlayerId);
+        // RPC_EndTurn(currentRunner.LocalPlayer.PlayerId);
     }
     
 
     [Rpc(sources: RpcSources.All, targets: RpcTargets.All)]
     public void RPC_EndTurn(int playerId)
     {
+        Debug.Log("RPC_EndTurn");
         if (playerId != currentRunner.LocalPlayer.PlayerId)
         {
-            currentTurnId++;
             currentTurnId = currentTurnId % currentRunner.ActivePlayers.Count()+1;
         }
     }
@@ -247,8 +247,6 @@ public class NetworkController : NetworkBehaviour
         {
             GameStateUpdate();
         }
-
-        return;
 
         //handles avatar update things in game running mode
         if (IsGameRunning)
