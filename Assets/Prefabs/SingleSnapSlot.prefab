@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1837823925079806519}
   - component: {fileID: 4145368264164157869}
   - component: {fileID: 3685227747951454821}
+  - component: {fileID: 7820576752105385081}
   m_Layer: 0
   m_Name: SingleSnapSlot
   m_TagString: SingleSnapSlot
@@ -28,13 +29,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8892571607166111857}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.57755035, y: -0.000000029802319, z: -0.000000059604638, w: 0.8163551}
-  m_LocalPosition: {x: 1.176, y: 0.062, z: 0.125}
-  m_LocalScale: {x: 0.39338347, y: 0.1263127, z: 0.28349417}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 70.557, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8648310540112850996
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -122,3 +123,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   singleBench: {fileID: 0}
+--- !u!114 &7820576752105385081
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8892571607166111857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa375f017706b6447b4dfc70406b11c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  parentBench: {fileID: 0}
+  CurrentTile: {fileID: 0}
+  drawTileSpeed: 0.3

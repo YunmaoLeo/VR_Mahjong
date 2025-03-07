@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Fusion;
 using UnityEngine;
 using Object = System.Object;
@@ -8,6 +9,7 @@ using Random = System.Random;
 public class TilesGenerator : MonoBehaviour
 {
     [SerializeField] private NetworkObject tilePrefab;
+    [SerializeField] private Transform refinedTilePrefab;
     [SerializeField] private Transform tileSpawnPoint;
     public static TilesGenerator Instance;
 
@@ -19,6 +21,10 @@ public class TilesGenerator : MonoBehaviour
     
     [SerializeField] private float wallLength = 13 * 0.3f;
     [SerializeField] private float wallOffset = 0.8f;
+
+    private List<RefinedMahjongTile> refinedTilesList;
+
+    [SerializeField] private Transform MahjongTilesPool;
 
     public enum TileType
     {
@@ -70,12 +76,20 @@ public class TilesGenerator : MonoBehaviour
     void Start()
     {
         Instance = this;
+        refinedTilesList = new List<RefinedMahjongTile>();
+        
+        GenerateTilesAndShuffle(42);
+    }
+
+    public RefinedMahjongTile GetFirstMahjong()
+    {
+        var result = refinedTilesList.First();
+        refinedTilesList.RemoveAt(0);
+        return result;
     }
 
     public void GenerateTilesAndShuffle(int seed)
     {
-        
-        var runner = NetworkController.Instance.GetRunner();
 
         Vector3[] wallPositions =
         {
@@ -123,15 +137,18 @@ public class TilesGenerator : MonoBehaviour
 
             for (int col = 0; col < 13; col++) // 13 列
             {
-                for (int row = 0; row < 2; row++) // 2 层
+                for (int row = 1; row >=0; row--) // 2 层
                 {
                     Vector3 offset = new Vector3(col * tileSize - (wallLength / 2), row * tileHeight, 0);
-                    Vector3 tilePosition = wallStartPos + wallRotation * offset; 
-                    NetworkObject tile = runner.Spawn(tilePrefab, tilePosition+tileSpawnPoint.position, wallRotation, PlayerRef.None);
-                    var mahjongTile = tile.GetComponent<MahjongTile>();
-                    mahjongTile.TileInfo = AllTiles[tileIndex];
-                    mahjongTile.Point = AllTiles[tileIndex].Value;
-                    mahjongTile.Type = AllTiles[tileIndex].Type;
+                    Vector3 tilePosition = wallStartPos + wallRotation * offset;
+                    var tileObject = Instantiate(refinedTilePrefab, tilePosition + tileSpawnPoint.position,
+                        wallRotation, MahjongTilesPool);
+                    var refinedMahjongTile = tileObject.GetComponent<RefinedMahjongTile>();
+                    refinedMahjongTile.TileInfo = AllTiles[tileIndex];
+                    refinedMahjongTile.Point = AllTiles[tileIndex].Value;
+                    refinedMahjongTile.Type = AllTiles[tileIndex].Type;
+                    refinedMahjongTile.InitializeMahjongModel();
+                    refinedTilesList.Add(refinedMahjongTile);
                     tileIndex++;
                 }
             }

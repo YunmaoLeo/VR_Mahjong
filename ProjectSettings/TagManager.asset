@@ -10,6 +10,8 @@ TagManager:
   - Accessory
   - TestTile
   - SingleSnapSlot
+  - RefinedTile
+  - ThrowArea
   layers:
   - Default
   - TransparentFX
@@ -17,7 +19,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - RefinedTile
   - 
   - 
   - 
