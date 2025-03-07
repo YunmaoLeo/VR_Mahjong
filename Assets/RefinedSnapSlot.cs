@@ -51,17 +51,23 @@ public class RefinedSnapSlot : MonoBehaviour
         
     }
 
-    public void ThrowTile()
+    public void ThrowTile(bool onlyLocal)
     {
         CurrentTile.parentSlot = null;
         CurrentTile.IsInBench = false;
         CurrentTile.DisablePhysicsComponents();
         TileThrowArea.Instance.ThrowTile(CurrentTile);
         
-        
-        parentBench.OnThrowTileEvent(CurrentTile.TileInfo);
+        if (!onlyLocal)
+        {
+            parentBench.OnThrowTileEvent(CurrentTile.TileInfo);
+        }
         CurrentTile = null;
+    }
 
-
+    public void DoMoveToFunctionArea()
+    {
+        parentBench.MoveHighlightTilesToFunctionArea();
+        RemoveCurrentTile();
     }
 }

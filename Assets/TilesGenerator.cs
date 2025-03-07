@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Fusion;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Object = System.Object;
 using Random = System.Random;
 
@@ -22,7 +23,9 @@ public class TilesGenerator : MonoBehaviour
     [SerializeField] private float wallLength = 13 * 0.3f;
     [SerializeField] private float wallOffset = 0.8f;
 
-    private List<RefinedMahjongTile> refinedTilesList;
+    public int HasBeenDrawed = 0;
+    
+    public List<RefinedMahjongTile> RefinedTilesList;
 
     [SerializeField] private Transform MahjongTilesPool;
 
@@ -76,15 +79,15 @@ public class TilesGenerator : MonoBehaviour
     void Start()
     {
         Instance = this;
-        refinedTilesList = new List<RefinedMahjongTile>();
+        RefinedTilesList = new List<RefinedMahjongTile>();
         
         GenerateTilesAndShuffle(42);
     }
 
     public RefinedMahjongTile GetFirstMahjong()
     {
-        var result = refinedTilesList.First();
-        refinedTilesList.RemoveAt(0);
+        var result = RefinedTilesList.First();
+        RefinedTilesList.RemoveAt(0);
         return result;
     }
 
@@ -148,7 +151,7 @@ public class TilesGenerator : MonoBehaviour
                     refinedMahjongTile.Point = AllTiles[tileIndex].Value;
                     refinedMahjongTile.Type = AllTiles[tileIndex].Type;
                     refinedMahjongTile.InitializeMahjongModel();
-                    refinedTilesList.Add(refinedMahjongTile);
+                    RefinedTilesList.Add(refinedMahjongTile);
                     tileIndex++;
                 }
             }

@@ -4,6 +4,7 @@ using DG.Tweening;
 using Fusion;
 using Unity.Networking.Transport;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class NetworkController : NetworkBehaviour
 {
@@ -49,6 +50,9 @@ public class NetworkController : NetworkBehaviour
 
     [SerializeField] private string pickTileHelpInfo = "Please randomly pick 8 tiles.";
     [SerializeField] private string dropTileHelpInfo = "Please drop and pick at most 4 tiles.";
+
+    [SerializeField] private Transform winUI;
+    [SerializeField] private Transform loseUI;
     
     public NetworkRunner GetRunner()
     {
@@ -70,6 +74,7 @@ public class NetworkController : NetworkBehaviour
     {
         IsPlayerReadyDict[player.PlayerId] = false;
         PlayerPointDict[player.PlayerId] = 0;
+        _playerComboCountDict[player.PlayerId] = 0;
         isConnected = true;
     }
 
@@ -88,6 +93,7 @@ public class NetworkController : NetworkBehaviour
         GenerateTiles,
         DrawTiles,
         StartTurn,
+        End,
     }
 
     private float readyToStartTimer = 0.0f;
@@ -111,13 +117,20 @@ public class NetworkController : NetworkBehaviour
 
     private float calculateFinalScoreTimer = 0.0f;
     private float calculateFinalScoreDuration = 10.0f;
+
+    private float startTurnTimer = 0.0f;
+    private float startTurnDuration = 1.0f;
     
     [SerializeField] private GameState _currentGameState = GameState.ReadyToStart;
 
     public int currentTurnId = 1;
     private int prevTurnId = 0;
+    
+    private Dictionary<int, int> _playerComboCountDict = new Dictionary<int,int>();
 
     [SerializeField] private Transform currentTurnUI;
+
+    public bool hasShowEnd = false;
     
     public void GameStateUpdate()
     {
@@ -173,15 +186,36 @@ public class NetworkController : NetworkBehaviour
             
             
             case GameState.StartTurn:
+                if (startTurnTimer <= startTurnDuration)
+                {
+                    startTurnTimer += Time.fixedDeltaTime;
+                    return;
+                }
+
+                startTurnTimer = 0;
+                
                 if (prevTurnId != currentTurnId)
                 {
+                    if (TilesGenerator.Instance.RefinedTilesList.Count() == 0)
+                    {
+                        _currentGameState = GameState.End;
+                        break;
+                    }
                     //change current turn image position;
                     currentTurnUI.gameObject.SetActive(true);
                     currentTurnUI.transform.DOMove(possiblePositionsList[currentTurnId - 1].position 
                                                    + new Vector3(0,8.0f,0), 0.25f);
-                    
                     //end change ui
                     
+                    
+                    if (currentTurnId == currentRunner.LocalPlayer.PlayerId)
+                    {
+                        var localBench = RefinedBenchCollection.Instance.GetSpecificBench(
+                        currentTurnId);
+                        localBench.ShowTextWithDuration(startTurnDuration, "Your Turn!");
+                    }
+                    
+                    //show local prompt
                     prevTurnId = currentTurnId;
                     
                     var bench = RefinedBenchCollection.Instance.GetSpecificBench(
@@ -195,8 +229,61 @@ public class NetworkController : NetworkBehaviour
                 }
 
                 break;
+            
+            case GameState.End:
+                if (hasShowEnd)
+                {
+                    break;
+                }
+                hasShowEnd = true;
+                int maxPair = -1;
+                int maxPlayer = 0;
+                foreach (var kv in _playerComboCountDict)
+                {
+                    if (kv.Value > maxPair)
+                    {
+                        maxPlayer = kv.Key;
+                        maxPair = kv.Value;
+                    }
+                }
+
+                if (maxPlayer == currentRunner.LocalPlayer.PlayerId)
+                {
+                    winUI.gameObject.SetActive(true);
+                }
+                else
+                {
+                    winUI.gameObject.SetActive(false);
+                }
+                
+                break;
         }
     }
+
+    public void BroadcastCombo(TilesGenerator.TileInfo info1, TilesGenerator.TileInfo info2)
+    {
+        RPC_Combo(currentRunner.LocalPlayer.PlayerId,
+            info1.Type, info2.Type,
+            info1.Value, info2.Value);
+    }
+
+    [Rpc(sources: RpcSources.All, targets: RpcTargets.All)]
+    public void RPC_Combo(int playerId, 
+        TilesGenerator.TileType type1, TilesGenerator.TileType type2,
+        int value1, int value2)
+    {
+        _playerComboCountDict[playerId] ++;
+        if (playerId != currentRunner.LocalPlayer.PlayerId)
+        {
+            var info1 = new TilesGenerator.TileInfo(type1, value1);
+            var info2 = new TilesGenerator.TileInfo(type2, value2);
+            var bench = RefinedBenchCollection.Instance.GetSpecificBench(
+                playerId);
+            bench.DoLocalCombo(info1, info2);
+        }
+    }
+    
+    
 
     public void BroadcastThrowTile(TilesGenerator.TileInfo tileInfo)
     {
@@ -211,13 +298,22 @@ public class NetworkController : NetworkBehaviour
             var bench = RefinedBenchCollection.Instance.GetSpecificBench(
                 playerId);
             bench.ThrowTileAccordingTypeInfo(type, value);
+            
+            //other player test if it is available to peng or chi?
+            if (currentRunner.LocalPlayer.PlayerId == 
+                playerId % currentRunner.ActivePlayers.Count() + 1)
+            {
+                bench = RefinedBenchCollection.Instance.GetSpecificBench(
+                    playerId % currentRunner.ActivePlayers.Count() + 1);
+                bench.CanPengOrCanChi(type, value);
+            }
         }
     }
     
     public void Broadcast_EndTurn()
     {
-        currentTurnId = currentTurnId % currentRunner.ActivePlayers.Count()+1;
-        // RPC_EndTurn(currentRunner.LocalPlayer.PlayerId);
+        // currentTurnId = currentTurnId % currentRunner.ActivePlayers.Count()+1;
+        RPC_EndTurn(currentRunner.LocalPlayer.PlayerId);
     }
     
 
@@ -225,10 +321,16 @@ public class NetworkController : NetworkBehaviour
     public void RPC_EndTurn(int playerId)
     {
         Debug.Log("RPC_EndTurn");
-        if (playerId != currentRunner.LocalPlayer.PlayerId)
+        // if (playerId != currentRunner.LocalPlayer.PlayerId)
         {
             currentTurnId = currentTurnId % currentRunner.ActivePlayers.Count()+1;
         }
+    }
+
+    public void ReloadScene()
+    {
+        currentRunner.Shutdown();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
 

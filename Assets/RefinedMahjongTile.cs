@@ -9,18 +9,19 @@ using UnityEngine.Serialization;
 
 public class RefinedMahjongTile : MonoBehaviour
 {
-    
     public TilesGenerator.TileInfo TileInfo;
     [SerializeField] private bool isDebugMode;
 
     public RefinedSnapSlot parentSlot;
-    
+
     public TilesGenerator.TileType Type { get; set; }
     public int Point { get; set; }
-    
+
     [SerializeField] private GameObject handGrabObject;
     [SerializeField] private Grabbable grabbable;
     [SerializeField] private Rigidbody rb;
+
+    public bool IsAbleToFunction = false;
 
     private bool hasInitialized = false;
 
@@ -37,7 +38,7 @@ public class RefinedMahjongTile : MonoBehaviour
     private bool _isInGrab = false;
     private int _isInThrowArea = 0;
     private int _isInFunctionArea = 0;
-    
+
     public void InitializeMahjongModel()
     {
         var tileModel = MahjongPrefabManager.Instance.GetAccordingMahjongModel(Type, Point);
@@ -57,19 +58,16 @@ public class RefinedMahjongTile : MonoBehaviour
         boxCollider.enabled = true;
         handGrabObject.SetActive(true);
     }
-    
 
 
     public void OnComboState()
     {
-  
     }
 
     public void DestroyTile()
     {
-        
     }
-    
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("ThrowArea"))
@@ -81,6 +79,10 @@ public class RefinedMahjongTile : MonoBehaviour
         if (other.CompareTag("FunctionArea"))
         {
             _isInFunctionArea++;
+            if (IsAbleToFunction)
+            {
+                parentSlot.DoMoveToFunctionArea();
+            }
         }
     }
 
@@ -93,8 +95,8 @@ public class RefinedMahjongTile : MonoBehaviour
         if (other.CompareTag("ThrowArea"))
         {
             _isInThrowArea--;
-        }        
-        
+        }
+
         if (other.CompareTag("FunctionArea"))
         {
             _isInFunctionArea--;
@@ -104,8 +106,8 @@ public class RefinedMahjongTile : MonoBehaviour
     void Start()
     {
         grabbable.WhenPointerEventRaised += OnPointerEvent;
-
     }
+
     void OnPointerEvent(PointerEvent evt)
     {
         switch (evt.Type)
@@ -113,21 +115,26 @@ public class RefinedMahjongTile : MonoBehaviour
             case PointerEventType.Select:
                 _isInGrab = true;
                 break;
-            
+
             case PointerEventType.Unselect:
                 _isInGrab = false;
                 if (IsInBench)
                 {
+                    if (IsAbleToFunction)
+                    {
+                        break;
+                    }
+
                     if (_isInThrowArea > 0)
                     {
-                        parentSlot.ThrowTile();
+                        parentSlot.ThrowTile(false);
                     }
                     else
                     {
                         parentSlot.ResetCurrentTilePosition();
                     }
                 }
-                
+
                 //reset to nearest space
                 break;
         }

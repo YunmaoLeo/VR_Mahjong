@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class TileThrowArea : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class TileThrowArea : MonoBehaviour
     [SerializeField] private int lineLength = 6;
     private List<RefinedMahjongTile> throwedTileList;
 
-    private RefinedMahjongTile _lastTile;
+    public RefinedMahjongTile LastTile;
 
     void Start()
     {
@@ -30,7 +31,7 @@ public class TileThrowArea : MonoBehaviour
         tile.transform.DOMove(position, 0.3f);
         tile.transform.DOLocalRotate(new Vector3(0,0,180), 0.1f);
         throwedTileList.Add(tile);
-        _lastTile = tile;
+        LastTile = tile;
     }
 
     // Update is called once per frame

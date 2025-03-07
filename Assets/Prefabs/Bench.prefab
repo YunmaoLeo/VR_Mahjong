@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1309604835035443131
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3252282398203573298}
+  m_Layer: 0
+  m_Name: ComboPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3252282398203573298
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1309604835035443131}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.747, y: -0.183, z: 0.432}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 153253936750989690}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3007422247878542865
 GameObject:
   m_ObjectHideFlags: 0
@@ -270,6 +301,7 @@ Transform:
   - {fileID: 2649826197335117368}
   - {fileID: 802341206592779602}
   - {fileID: 3846390669586257714}
+  - {fileID: 3252282398203573298}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!114 &8978471699552746766
@@ -340,6 +372,14 @@ MonoBehaviour:
   debug_needThrow: 0
   ThrowArea: {fileID: 802341206592779602}
   FunctionArea: {fileID: 3846390669586257714}
+  infoText: {fileID: 5125362438896026207}
+  ComboPosition: {fileID: 3252282398203573298}
+  SingleComboWidth: 0.7
+  SingleComboHeight: 0.33
+  SingleTileWidth: 0.23
+  OneRowComboLength: 4
+  debug_needMoveHighlight: 0
+  currentComboNumber: 0
 --- !u!1 &5225963210849352222
 GameObject:
   m_ObjectHideFlags: 0
@@ -367,8 +407,8 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5225963210849352222}
   m_LocalRotation: {x: -0, y: -1, z: -0, w: 0.00010755655}
-  m_LocalPosition: {x: 0, y: 0, z: -0}
-  m_LocalScale: {x: 0.02866652, y: 0.009368372, z: 0.009731454}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.01773055, y: 0.009368372, z: 0.009731454}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5975535542618132560}
@@ -376,7 +416,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180.012, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -0.78, y: 0.406}
+  m_AnchoredPosition: {x: -0.3, y: 0.406}
   m_SizeDelta: {x: 744, y: 914}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &7106060628846867897
@@ -477,7 +517,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -23.4, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_SizeDelta: {x: 170.2, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3869230434451386863
 CanvasRenderer:
@@ -534,8 +574,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 16
+  m_fontSizeBase: 16
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -792,8 +832,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1.0000004, y: 0.99999994, z: 1.0000004}
-  m_Center: {x: -0.000011444102, y: 0.0000038146973, z: -0.000015258793}
+  m_Size: {x: 1.0000004, y: 1.4724424, z: 1.0000004}
+  m_Center: {x: -0.000011449125, y: -0.049504757, z: -0.000015258765}
 --- !u!1001 &1197328259014410572
 PrefabInstance:
   m_ObjectHideFlags: 0
